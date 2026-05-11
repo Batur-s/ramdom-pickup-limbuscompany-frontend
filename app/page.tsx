@@ -38,7 +38,21 @@ export default function HomePage() {
       window.history.replaceState({}, "", "/");
     }
 
-    authApi.me();
+    authApi
+      .me()
+      .then((u) => {
+        setUser(u);
+        return gamesApi.getAll() as Promise<{ items: Game[] }>;
+      })
+      .then((res) => setGames(res.items))
+      .catch((e) => {
+        console.error("에러:", e);
+        setUser(null); // 에러 시 로딩 해제
+      })
+      .finally(() => {
+        console.log("로딩 완료");
+        setLoading(false);
+      });
   }, []);
 
   // useEffect(() => {
