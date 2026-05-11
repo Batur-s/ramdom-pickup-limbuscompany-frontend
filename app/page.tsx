@@ -23,27 +23,52 @@ export default function HomePage() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [nickName, setNickName] = useState('');
+  const [nickName, setNickName] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    authApi.me()
+    // URL에서 토큰 추출
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (token) {
+      // 쿠키에 저장
+      document.cookie = `accessToken=${token}; path=/; max-age=3600; SameSite=None; Secure`;
+      // URL에서 토큰 제거
+      window.history.replaceState({}, "", "/");
+    }
+
+    authApi
+      .me()
       .then((u) => {
         setUser(u);
-        setNickName(u.nickName);
         return gamesApi.getAll() as Promise<{ items: Game[] }>;
       })
       .then((res) => setGames(res.items))
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
   }, []);
+  // useEffect(() => {
+  //   authApi.me()
+  //     .then((u) => {
+  //       setUser(u);
+  //       setNickName(u.nickName);
+  //       return gamesApi.getAll() as Promise<{ items: Game[] }>;
+  //     })
+  //     .then((res) => setGames(res.items))
+  //     .catch((e) => console.error(e))
+  //     .finally(() => setLoading(false));
+  // }, []);
 
   async function handleUpdateProfile() {
-    if (!nickName.trim()) return alert('닉네임을 입력해주세요');
+    if (!nickName.trim()) return alert("닉네임을 입력해주세요");
     setSaving(true);
     try {
-      const res = await authApi.updateMe({ nickName }) as { id: string; nickName: string };
-      setUser((prev) => prev ? { ...prev, nickName: res.nickName } : prev);
+      const res = (await authApi.updateMe({ nickName })) as {
+        id: string;
+        nickName: string;
+      };
+      setUser((prev) => (prev ? { ...prev, nickName: res.nickName } : prev));
       setShowProfileModal(false);
     } catch (e: any) {
       alert(e.message);
@@ -64,7 +89,7 @@ export default function HomePage() {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center gap-6">
         <h1 className="text-2xl font-bold">림버스 런 트래커</h1>
-      <a
+        <a
           href="https://lingo-fervor-salute.ngrok-free.dev/auth/google"
           className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600"
         >
@@ -177,7 +202,7 @@ export default function HomePage() {
               disabled={saving}
               className="bg-blue-500 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-600 disabled:opacity-40"
             >
-              {saving ? '저장 중...' : '저장'}
+              {saving ? "저장 중..." : "저장"}
             </button>
           </div>
         </div>
