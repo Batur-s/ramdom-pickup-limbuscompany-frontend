@@ -38,16 +38,9 @@ export default function HomePage() {
       window.history.replaceState({}, "", "/");
     }
 
-    authApi
-      .me()
-      .then((u) => {
-        setUser(u);
-        return gamesApi.getAll() as Promise<{ items: Game[] }>;
-      })
-      .then((res) => setGames(res.items))
-      .catch((e) => console.error(e))
-      .finally(() => setLoading(false));
+    authApi.me();
   }, []);
+
   // useEffect(() => {
   //   authApi.me()
   //     .then((u) => {

@@ -1,13 +1,21 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
+function getToken() {
+  const match = document.cookie.match(/accessToken=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 export async function apiClient<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  const token = getToken();
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
     credentials: "include",
