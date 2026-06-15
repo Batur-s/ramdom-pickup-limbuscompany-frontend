@@ -95,7 +95,7 @@ export default function IdentityPage() {
       </p>
 
       {/* sinner 아이콘 목록 */}
-      <div className="grid grid-cols-6 gap-6 max-w-3xl mb-8">
+      <div className="grid grid-cols-4 gap-4 max-w-3xl mb-8 md:grid-cols-6">
         {sinners.map((sinner) => {
           const items = grouped.get(sinner.id) ?? [];
           const ownedCount = items.filter((i) => getOwned(i.id)).length;
@@ -107,7 +107,7 @@ export default function IdentityPage() {
               disabled={items.length === 0}
               className="flex flex-col items-center gap-2 group disabled:opacity-40"
             >
-              <div className={`w-24 h-24 rounded-full overflow-hidden border-2 transition ${
+              <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 transition ${
                 ownedCount > 0
                   ? 'border-blue-400'
                   : 'border-gray-200 group-hover:border-gray-400'
