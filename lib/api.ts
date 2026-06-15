@@ -9,13 +9,10 @@ export async function apiClient<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const token = getToken();
-
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
     credentials: "include",
@@ -26,7 +23,6 @@ export async function apiClient<T>(
     throw new Error(error.message ?? "API Error");
   }
 
-  // 빈 응답 처리
   const text = await res.text();
   return text ? JSON.parse(text) : ({} as T);
 }

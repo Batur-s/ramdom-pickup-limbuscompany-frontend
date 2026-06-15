@@ -55,17 +55,18 @@ export default function HomePage() {
       });
   }, []);
 
-  // useEffect(() => {
-  //   authApi.me()
-  //     .then((u) => {
-  //       setUser(u);
-  //       setNickName(u.nickName);
-  //       return gamesApi.getAll() as Promise<{ items: Game[] }>;
-  //     })
-  //     .then((res) => setGames(res.items))
-  //     .catch((e) => console.error(e))
-  //     .finally(() => setLoading(false));
-  // }, []);
+  useEffect(() => {
+    authApi
+      .me()
+      .then((u) => {
+        setUser(u);
+        setNickName(u.nickName);
+        return gamesApi.getAll() as Promise<{ items: Game[] }>;
+      })
+      .then((res) => setGames(res.items))
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
+  }, []);
 
   async function handleUpdateProfile() {
     if (!nickName.trim()) return alert("닉네임을 입력해주세요");
