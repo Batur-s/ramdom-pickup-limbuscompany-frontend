@@ -97,7 +97,7 @@ export default function HomePage() {
       <main className="min-h-screen flex flex-col items-center justify-center gap-6">
         <h1 className="text-2xl font-bold">림버스 런 트래커</h1>
         <a
-          href="https://lingo-fervor-salute.ngrok-free.dev/auth/google"
+          href="${process.env.NEXT_PUBLIC_API_URL}/auth/google"
           className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600"
         >
           Google로 로그인
