@@ -171,10 +171,18 @@ export default function NewGamePage() {
                 </button>
 
                 {/* 고정 높이로 밀림 방지 */}
-                <div className="h-10 flex flex-col items-center justify-start">
+                <div className="h-12 flex flex-col items-center justify-start">
                   {isSelected && selectedItem ? (
                     <>
-                      <p className="text-xs text-yellow-400 font-medium text-center leading-tight line-clamp-2">
+                      <p
+                        className="text-xs text-yellow-400 font-medium text-center leading-tight overflow-hidden"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          maxWidth: "80px",
+                        }}
+                      >
                         {selectedItem.identity.name}
                       </p>
                       <button
