@@ -75,7 +75,7 @@ export default function HomePage() {
             </div>
             <span className="text-yellow-200 font-bold text-xl">림버스 런 트래커</span>
           </div>
-          
+          <a
             href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
             className="bg-yellow-800 text-yellow-100 px-6 py-2 rounded hover:bg-yellow-700 transition font-bold"
           >
@@ -136,7 +136,7 @@ export default function HomePage() {
           </div>
 
           {/* 로그인 버튼 */}
-          
+          <a
             href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
             className="px-10 py-4 rounded-xl font-bold text-lg transition hover:scale-105"
             style={{ backgroundColor: '#8B5E3C', color: '#f5e6c8', boxShadow: '0 0 20px rgba(139, 94, 60, 0.5)' }}
