@@ -153,7 +153,6 @@ export default function HomePage() {
     );
   }
 
-  return (
 return (
   <main className="min-h-screen flex flex-col" style={{ backgroundColor: '#1a0f0a' }}>
     {/* 상단 네비게이션 */}
