@@ -68,11 +68,6 @@ export default function GamePage() {
     setSelectedStage(stage);
     setReroll(null);
     setAppliedReroll(false);
-    try {
-      await gamesApi.selectStage(gameId, { stageId: stage.id, difficulty });
-    } catch (e: any) {
-      alert(e.message);
-    }
   }
 
   async function handleCreateReroll() {
@@ -123,22 +118,24 @@ export default function GamePage() {
     }
   }
 
-  async function handleAdvance() {
-    try {
-      const res = (await gamesApi.advance(gameId)) as { currentFloor: number };
-      setFloor(res.currentFloor);
-      setSelectedStage(null);
-      setReroll(null);
-      setAppliedReroll(false);
-      const stageRes = (await gamesApi.getStages(gameId, difficulty)) as {
-        floor: number;
-        stages: Stage[];
-      };
-      setStages(stageRes.stages);
-    } catch (e: any) {
-      alert(e.message);
+async function handleAdvance() {
+  try {
+    if (selectedStage) {
+      await gamesApi.selectStage(gameId, { stageId: selectedStage.id, difficulty });
     }
+
+    const res = (await gamesApi.advance(gameId)) as { currentFloor: number };
+    setFloor(res.currentFloor);
+    setSelectedStage(null);
+    setReroll(null);
+    setAppliedReroll(false);
+
+    const stageRes = (await gamesApi.getStages(gameId, difficulty)) as { floor: number; stages: Stage[] };
+    setStages(stageRes.stages);
+  } catch (e: any) {
+    alert(e.message);
   }
+}
 
   async function handleFinish(status: "CLEAR" | "FAILURE") {
     try {
