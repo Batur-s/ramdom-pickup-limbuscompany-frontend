@@ -43,6 +43,7 @@ export default function GamePage() {
   const [reroll, setReroll] = useState<RerollResult | null>(null);
   const [appliedReroll, setAppliedReroll] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -73,11 +74,17 @@ export default function GamePage() {
   }
 
   async function handleCreateReroll() {
+    setIsSpinning(true);
     try {
       const res = (await gamesApi.createReroll(gameId)) as RerollResult;
-      setReroll(res);
-      setAppliedReroll(false);
+      // 애니메이션 시간 후 결과 표시
+      setTimeout(() => {
+        setReroll(res);
+        setAppliedReroll(false);
+        setIsSpinning(false);
+      }, 1500);
     } catch (e: any) {
+      setIsSpinning(false);
       if (e.message === "Not enough candidates outside deck") {
         alert(
           "리롤할 인격이 부족해요. 인격 관리에서 더 많은 인격을 등록해주세요.",
@@ -250,7 +257,7 @@ export default function GamePage() {
               Step 2 · 리롤
             </h2>
 
-            {!reroll ? (
+            {!reroll && !isSpinning ? (
               <button
                 onClick={handleCreateReroll}
                 className="px-6 py-3 rounded-lg font-bold transition hover:scale-105"
@@ -258,7 +265,44 @@ export default function GamePage() {
               >
                 🎲 리롤 뽑기
               </button>
-            ) : (
+            ) : isSpinning ? (
+              /* 슬롯머신 애니메이션 */
+              <div className="flex gap-3">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-36 rounded-xl overflow-hidden border"
+                    style={{
+                      borderColor: "rgba(120,53,15,0.5)",
+                      backgroundColor: "rgba(44,26,14,0.8)",
+                    }}
+                  >
+                    <div className="w-full aspect-square overflow-hidden relative">
+                      {/* 슬롯 스크롤 애니메이션 */}
+                      <div
+                        className="flex flex-col"
+                        style={{
+                          animation: `slot-spin 0.1s linear infinite`,
+                        }}
+                      >
+                        {/* 덱 이미지들을 빠르게 스크롤 */}
+                        {[...deck, ...deck, ...deck].map((item, idx) => (
+                          <img
+                            key={idx}
+                            src={item.identity.imageUrl ?? ""}
+                            alt=""
+                            className="w-full aspect-square object-cover flex-shrink-0"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <div className="h-4 bg-yellow-900/30 rounded animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : reroll ? (
               <div>
                 <p
                   className="text-sm mb-3"
@@ -324,7 +368,7 @@ export default function GamePage() {
                   </button>
                 )}
               </div>
-            )}
+            ) : null}
           </section>
         )}
 
