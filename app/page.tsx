@@ -73,7 +73,7 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-full bg-yellow-800 flex items-center justify-center">
               <span className="text-yellow-200 font-bold text-sm">LR</span>
             </div>
-            <span className="text-yellow-200 font-bold text-xl">림버스 런 트래커</span>
+            <span className="text-yellow-200 font-bold text-xl">짭 림토체스</span>
           </div>
           <a
             href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
@@ -110,13 +110,13 @@ export default function HomePage() {
           {/* 메인 타이틀 */}
           <h1 className="text-5xl md:text-7xl font-bold text-center mb-4"
             style={{ color: '#f5e6c8', textShadow: '0 0 30px rgba(200, 150, 50, 0.5)' }}>
-            림버스 런 트래커
+            짭 림토체스
           </h1>
           <p className="text-yellow-600 text-lg md:text-xl text-center mb-2">
             Limbus Company Random Run Tracker
           </p>
           <p className="text-yellow-800 text-sm md:text-base text-center mb-12 max-w-md">
-            보유한 인격으로 랜덤 덱을 구성하고 거던 런을 기록하세요
+            보유한 인격으로 덱을 구성하고 랜덤 인격 가챠와 함께 거던 런을 기록하세요
           </p>
 
           {/* 기능 소개 카드 */}
@@ -147,7 +147,7 @@ export default function HomePage() {
 
         {/* 하단 */}
         <footer className="text-center py-4 text-yellow-900 text-xs border-t border-yellow-900/20">
-          림버스 런 트래커 · 비공식 팬 사이트
+          짭 림토체스 · 비공식 팬 사이트
         </footer>
       </main>
     );
@@ -161,7 +161,7 @@ return (
         <div className="w-10 h-10 rounded-full bg-yellow-800 flex items-center justify-center">
           <span className="text-yellow-200 font-bold text-sm">LR</span>
         </div>
-        <span className="text-yellow-200 font-bold text-xl">림버스 런 트래커</span>
+        <span className="text-yellow-200 font-bold text-xl">짭 림토체스</span>
       </div>
       <div className="flex items-center gap-4">
         <span className="text-yellow-600 text-sm">{user.nickName}님</span>
@@ -180,7 +180,7 @@ return (
         <h1 className="text-3xl font-bold mb-1" style={{ color: '#f5e6c8' }}>
           안녕하세요, {user.nickName}님
         </h1>
-        <p className="text-yellow-800 text-sm">오늘도 거던 런을 기록해보세요</p>
+        <p className="text-yellow-800 text-sm">랜덤 인격 가챠와 함께 거던 런</p>
       </div>
 
       {/* 메뉴 버튼 */}
@@ -192,7 +192,6 @@ return (
         >
           <span className="text-3xl">🎲</span>
           <span className="text-yellow-200 font-bold">새 게임 시작</span>
-          <span className="text-yellow-800 text-xs">랜덤 덱으로 런 시작</span>
         </Link>
         <Link
           href="/identity"
@@ -257,7 +256,7 @@ return (
     </div>
 
     <footer className="text-center py-4 text-yellow-900 text-xs border-t border-yellow-900/20">
-      림버스 런 트래커 · 비공식 팬 사이트
+      짭 림토체스 · 비공식 팬 사이트
     </footer>
 
     {/* 프로필 수정 모달 */}
