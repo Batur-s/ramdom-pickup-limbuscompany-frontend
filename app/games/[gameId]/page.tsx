@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { gamesApi } from "@/lib/api";
+import Link from "next/link";
 
 type Stage = { id: string; name: string; imageUrl: string | null };
 type DeckItem = {
@@ -46,10 +47,7 @@ export default function GamePage() {
   useEffect(() => {
     Promise.all([
       gamesApi.getDeck(gameId) as Promise<{ items: DeckItem[] }>,
-      gamesApi.getStages(gameId, difficulty) as Promise<{
-        floor: number;
-        stages: Stage[];
-      }>,
+      gamesApi.getStages(gameId, difficulty) as Promise<{ floor: number; stages: Stage[] }>,
     ])
       .then(([deckRes, stageRes]) => {
         setDeck(deckRes.items);
@@ -84,11 +82,7 @@ export default function GamePage() {
   async function handleApplyReroll(userIdentityId: string) {
     if (!reroll) return;
     try {
-      await gamesApi.applyReroll(gameId, reroll.rerollId, {
-        selectUserIdentityId: userIdentityId,
-      });
-
-      // 덱 새로고침
+      await gamesApi.applyReroll(gameId, reroll.rerollId, { selectUserIdentityId: userIdentityId });
       const deckRes = (await gamesApi.getDeck(gameId)) as { items: DeckItem[] };
       setDeck(deckRes.items);
       setAppliedReroll(true);
@@ -104,11 +98,7 @@ export default function GamePage() {
       setSelectedStage(null);
       setReroll(null);
       setAppliedReroll(false);
-
-      const stageRes = (await gamesApi.getStages(gameId, difficulty)) as {
-        floor: number;
-        stages: Stage[];
-      };
+      const stageRes = (await gamesApi.getStages(gameId, difficulty)) as { floor: number; stages: Stage[] };
       setStages(stageRes.stages);
     } catch (e: any) {
       alert(e.message);
@@ -124,219 +114,196 @@ export default function GamePage() {
     }
   }
 
-  // 리롤 후보에서 identity 이름 찾기
-  function getCandidateName(candidate: RerollCandidate) {
-    const deckItem = deck.find(
-      (d) => d.userIdentityId === candidate.userIdentityId,
-    );
-    return deckItem?.identity.name ?? candidate.identityId;
-  }
-
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1a0f0a' }}>
+        <p className="text-yellow-700">로딩 중...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen p-8">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">게임 진행 - {floor}층</h1>
+    <main className="min-h-screen flex flex-col" style={{ backgroundColor: '#1a0f0a' }}>
+      {/* 네비게이션 */}
+      <nav className="flex items-center justify-between px-8 py-4 border-b border-yellow-900/30">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-yellow-800 hover:text-yellow-600 text-sm">← 메인으로</Link>
+          <h1 className="text-xl font-bold" style={{ color: '#f5e6c8' }}>
+            게임 진행 · <span className="text-yellow-400">{floor}층</span>
+          </h1>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => handleFinish("CLEAR")}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            className="px-4 py-2 rounded-lg text-sm font-bold"
+            style={{ backgroundColor: '#1a4731', color: '#4ade80' }}
           >
             클리어
           </button>
           <button
             onClick={() => handleFinish("FAILURE")}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            className="px-4 py-2 rounded-lg text-sm font-bold"
+            style={{ backgroundColor: '#4a1a1a', color: '#f87171' }}
           >
             실패
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* 난이도 선택 */}
-      <div className="flex gap-2 mb-6">
-        {(["NORMAL", "HARD"] as const).map((d) => (
-          <button
-            key={d}
-            onClick={() => setDifficulty(d)}
-            className={`px-4 py-2 rounded border ${
-              difficulty === d
-                ? "bg-blue-500 text-white border-blue-500"
-                : "border-gray-300 hover:border-gray-500"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
-      </div>
-
-      {/* STEP 1: 스테이지 선택 */}
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">STEP 1. 스테이지 선택</h2>
-        <div className="grid grid-cols-8 gap-2">
-          {stages.map((stage) => (
+      <div className="flex-1 p-8">
+        {/* 난이도 선택 */}
+        <div className="flex gap-2 mb-8">
+          {(["NORMAL", "HARD"] as const).map((d) => (
             <button
-              key={stage.id}
-              onClick={() => handleStageSelect(stage)}
-              className={`border rounded-lg overflow-hidden transition ${
-                selectedStage?.id === stage.id
-                  ? "border-blue-500 ring-2 ring-blue-300"
-                  : "border-gray-200 hover:border-gray-400"
-              }`}
+              key={d}
+              onClick={() => setDifficulty(d)}
+              className="px-6 py-2 rounded-lg text-sm font-bold transition"
+              style={{
+                backgroundColor: difficulty === d ? '#8B5E3C' : 'rgba(60,30,10,0.5)',
+                color: difficulty === d ? '#f5e6c8' : '#78350f',
+                border: `1px solid ${difficulty === d ? '#8B5E3C' : 'rgba(120,53,15,0.3)'}`,
+              }}
             >
-              <div
-                className="w-full bg-gray-100"
-                style={{ aspectRatio: "2/3" }}
+              {d}
+            </button>
+          ))}
+        </div>
+
+        {/* STEP 1: 스테이지 선택 */}
+        <section className="mb-8">
+          <h2 className="text-sm font-bold mb-3 text-yellow-700 uppercase tracking-widest">
+            Step 1 · 스테이지 선택
+          </h2>
+          <div className="grid grid-cols-8 gap-2">
+            {stages.map((stage) => (
+              <button
+                key={stage.id}
+                onClick={() => handleStageSelect(stage)}
+                className="rounded-lg overflow-hidden transition border-2"
+                style={{
+                  borderColor: selectedStage?.id === stage.id ? '#f5e6c8' : 'rgba(120,53,15,0.3)',
+                  boxShadow: selectedStage?.id === stage.id ? '0 0 12px rgba(245,230,200,0.3)' : 'none',
+                }}
               >
-                {stage.imageUrl ? (
-                  <img
-                    src={stage.imageUrl}
-                    alt={stage.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-1">
-                    <span className="text-xs text-gray-400 text-center leading-tight">
-                      {stage.name}
-                    </span>
-                  </div>
+                <div className="w-full bg-yellow-900/20" style={{ aspectRatio: "2/3" }}>
+                  {stage.imageUrl ? (
+                    <img src={stage.imageUrl} alt={stage.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-1">
+                      <span className="text-xs text-yellow-800 text-center leading-tight">{stage.name}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-center py-1 px-1 leading-tight truncate text-yellow-700">
+                  {stage.name}
+                </p>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* STEP 2: 리롤 */}
+        {selectedStage && (
+          <section className="mb-8">
+            <h2 className="text-sm font-bold mb-3 text-yellow-700 uppercase tracking-widest">
+              Step 2 · 리롤
+            </h2>
+
+            {!reroll ? (
+              <button
+                onClick={handleCreateReroll}
+                className="px-6 py-3 rounded-lg font-bold transition hover:scale-105"
+                style={{ backgroundColor: '#8B5E3C', color: '#f5e6c8' }}
+              >
+                🎲 리롤 뽑기
+              </button>
+            ) : (
+              <div>
+                <p className="text-sm mb-3" style={{ color: appliedReroll ? '#4ade80' : '#f5e6c8' }}>
+                  {appliedReroll ? "✅ 적용 완료! 다음 층으로 넘어가세요." : "적용할 인격을 선택하세요."}
+                </p>
+                <div className="flex gap-3 mb-4">
+                  {reroll.candidates.map((c) => (
+                    <button
+                      key={c.userIdentityId}
+                      onClick={() => !appliedReroll && handleApplyReroll(c.userIdentityId)}
+                      disabled={appliedReroll}
+                      className="rounded-xl overflow-hidden text-left transition w-36 border"
+                      style={{
+                        borderColor: appliedReroll ? 'rgba(120,53,15,0.2)' : 'rgba(120,53,15,0.5)',
+                        backgroundColor: 'rgba(44,26,14,0.8)',
+                        opacity: appliedReroll ? 0.5 : 1,
+                      }}
+                    >
+                      <div className="w-full aspect-square bg-yellow-900/20">
+                        {c.imageUrl ? (
+                          <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-xs text-yellow-800">No img</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p className="font-semibold text-xs leading-tight" style={{ color: '#f5e6c8' }}>{c.name}</p>
+                        <p className="text-xs text-yellow-800 mt-1">Tier: {c.rolledTier}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {!appliedReroll && (
+                  <button
+                    onClick={handleCreateReroll}
+                    className="text-sm text-yellow-800 hover:text-yellow-600 underline"
+                  >
+                    다시 리롤
+                  </button>
                 )}
               </div>
-              <p className="text-xs text-center py-1 px-1 leading-tight truncate">
-                {stage.name}
-              </p>
-            </button>
-          ))}
-        </div>
-      </section>
+            )}
+          </section>
+        )}
 
-      {/* STEP 2: 리롤 */}
-      {selectedStage && (
-        <section className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">STEP 2. 리롤</h2>
+        {/* STEP 3: 다음 층 */}
+        {appliedReroll && (
+          <button
+            onClick={handleAdvance}
+            className="mb-8 px-6 py-3 rounded-lg font-bold transition hover:scale-105"
+            style={{ backgroundColor: '#8B5E3C', color: '#f5e6c8', boxShadow: '0 0 20px rgba(139,94,60,0.4)' }}
+          >
+            다음 층으로 →
+          </button>
+        )}
 
-          {!reroll ? (
-            <button
-              onClick={handleCreateReroll}
-              className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600"
-            >
-              리롤 뽑기
-            </button>
-          ) : (
-            <div>
-              <p className="text-sm text-gray-500 mb-3">
-                {appliedReroll
-                  ? "✅ 적용 완료! 다음 층으로 넘어가세요."
-                  : "적용할 identity를 선택하세요."}
-              </p>
-              <div className="flex gap-3 mb-4">
-                {reroll.candidates.map((c) => (
-                  <button
-                    key={c.userIdentityId}
-                    onClick={() =>
-                      !appliedReroll && handleApplyReroll(c.userIdentityId)
-                    }
-                    disabled={appliedReroll}
-                    className={`border rounded-xl overflow-hidden text-left transition w-36 ${
-                      appliedReroll
-                        ? "border-gray-200 opacity-50"
-                        : "border-gray-300 hover:border-purple-400 hover:shadow-md"
-                    }`}
-                  >
-                    {/* 이미지 */}
-                    <div className="w-full aspect-square bg-gray-100">
-                      {c.imageUrl ? (
-                        <img
-                          src={c.imageUrl}
-                          alt={c.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xs text-gray-400">No img</span>
-                        </div>
-                      )}
-                    </div>
-                    {/* 정보 */}
-                    <div className="p-2">
-                      <p className="font-semibold text-xs leading-tight">
-                        {c.name}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Tier: {c.rolledTier}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {!appliedReroll && (
-                <button
-                  onClick={handleCreateReroll}
-                  className="text-sm text-purple-500 underline"
-                >
-                  다시 리롤
-                </button>
-              )}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* STEP 3: 다음 층 */}
-      {appliedReroll && (
-        <button
-          onClick={handleAdvance}
-          className="mb-8 bg-yellow-400 text-black px-6 py-3 rounded-lg hover:bg-yellow-500"
-        >
-          다음 층으로 →
-        </button>
-      )}
-
-      {/* 현재 덱 */}
-      <section>
-        <h2 className="text-lg font-semibold mb-3">현재 덱</h2>
-        <div className="grid grid-cols-12 gap-1">
-          {deck.map((item) => (
-            <div
-              key={item.gameDeckId}
-              className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100"
-            >
-              {item.identity.imageUrl ? (
-                <img
-                  src={item.identity.imageUrl}
-                  alt={item.identity.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-xs text-gray-400 text-center px-1 leading-tight">
-                    {item.identity.name}
-                  </span>
+        {/* 현재 덱 */}
+        <section>
+          <h2 className="text-sm font-bold mb-3 text-yellow-700 uppercase tracking-widest">현재 덱</h2>
+          <div className="grid grid-cols-12 gap-1">
+            {deck.map((item) => (
+              <div
+                key={item.gameDeckId}
+                className="relative group aspect-square rounded-lg overflow-hidden"
+                style={{ backgroundColor: 'rgba(44,26,14,0.8)' }}
+              >
+                {item.identity.imageUrl ? (
+                  <img src={item.identity.imageUrl} alt={item.identity.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-xs text-yellow-800 text-center px-1 leading-tight">{item.identity.name}</span>
+                  </div>
+                )}
+                <div className="absolute top-0.5 right-0.5 bg-black/70 text-yellow-400 text-xs px-1 rounded leading-tight">
+                  {item.identity.tier}
                 </div>
-              )}
-              {/* 티어 뱃지 */}
-              <div className="absolute top-0.5 right-0.5 bg-black/60 text-white text-xs px-1 rounded leading-tight">
-                {item.identity.tier}
+                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                  <p className="text-yellow-200 text-xs text-center px-1 leading-tight">{item.identity.name}</p>
+                </div>
               </div>
-              {/* 호버 툴팁 */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <p className="text-white text-xs text-center px-1 leading-tight">
-                  {item.identity.name}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
