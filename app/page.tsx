@@ -27,35 +27,6 @@ export default function HomePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // URL에서 토큰 추출
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      // 쿠키에 저장
-      document.cookie = `accessToken=${token}; path=/; max-age=3600; SameSite=None; Secure`;
-      // URL에서 토큰 제거
-      window.history.replaceState({}, "", "/");
-    }
-
-    authApi
-      .me()
-      .then((u) => {
-        setUser(u);
-        return gamesApi.getAll() as Promise<{ items: Game[] }>;
-      })
-      .then((res) => setGames(res.items))
-      .catch((e) => {
-        console.error("에러:", e);
-        setUser(null); // 에러 시 로딩 해제
-      })
-      .finally(() => {
-        console.log("로딩 완료");
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
     authApi
       .me()
       .then((u) => {
@@ -87,22 +58,97 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
+      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#1a0f0a' }}>
+        <p className="text-yellow-700">로딩 중...</p>
       </main>
     );
   }
 
   if (!user) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-6">
-        <h1 className="text-2xl font-bold">림버스 런 트래커</h1>
-        <a
-          href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
-          className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600"
-        >
-          Google로 로그인
-        </a>
+      <main className="min-h-screen flex flex-col" style={{ backgroundColor: '#1a0f0a' }}>
+        {/* 상단 네비게이션 */}
+        <nav className="flex items-center justify-between px-8 py-4 border-b border-yellow-900/30">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-yellow-800 flex items-center justify-center">
+              <span className="text-yellow-200 font-bold text-sm">LR</span>
+            </div>
+            <span className="text-yellow-200 font-bold text-xl">림버스 런 트래커</span>
+          </div>
+          
+            href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
+            className="bg-yellow-800 text-yellow-100 px-6 py-2 rounded hover:bg-yellow-700 transition font-bold"
+          >
+            로그인
+          </a>
+        </nav>
+
+        {/* 메인 배너 */}
+        <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 relative overflow-hidden">
+          {/* 배경 장식 */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-5">
+            <div className="grid grid-cols-6 gap-4">
+              {Array.from({ length: 48 }).map((_, i) => (
+                <div key={i} className="w-16 h-20 border border-yellow-500 rounded-lg" />
+              ))}
+            </div>
+          </div>
+
+          {/* 슬롯머신 느낌 장식 */}
+          <div className="flex gap-3 mb-8 opacity-40">
+            {['S', 'A', 'B', '?', 'S', 'A'].map((tier, i) => (
+              <div key={i} className={`w-12 h-16 rounded-lg border-2 flex items-center justify-center font-bold text-lg
+                ${tier === 'S' ? 'border-yellow-400 text-yellow-400' :
+                  tier === 'A' ? 'border-orange-400 text-orange-400' :
+                  tier === '?' ? 'border-white text-white animate-pulse' :
+                  'border-green-400 text-green-400'}`}>
+                {tier}
+              </div>
+            ))}
+          </div>
+
+          {/* 메인 타이틀 */}
+          <h1 className="text-5xl md:text-7xl font-bold text-center mb-4"
+            style={{ color: '#f5e6c8', textShadow: '0 0 30px rgba(200, 150, 50, 0.5)' }}>
+            림버스 런 트래커
+          </h1>
+          <p className="text-yellow-600 text-lg md:text-xl text-center mb-2">
+            Limbus Company Random Run Tracker
+          </p>
+          <p className="text-yellow-800 text-sm md:text-base text-center mb-12 max-w-md">
+            보유한 인격으로 랜덤 덱을 구성하고 거던 런을 기록하세요
+          </p>
+
+          {/* 기능 소개 카드 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 w-full max-w-2xl">
+            {[
+              { icon: '🎲', title: '랜덤 리롤', desc: '가중치 기반 랜덤 인격 뽑기' },
+              { icon: '📋', title: '런 기록', desc: '층별 스테이지와 덱 기록 저장' },
+              { icon: '🔗', title: '공유', desc: '런 기록을 링크로 공유' },
+            ].map((item, i) => (
+              <div key={i} className="border border-yellow-900/50 rounded-xl p-4 text-center"
+                style={{ backgroundColor: 'rgba(60, 30, 10, 0.5)' }}>
+                <div className="text-3xl mb-2">{item.icon}</div>
+                <p className="text-yellow-200 font-bold mb-1">{item.title}</p>
+                <p className="text-yellow-700 text-sm">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* 로그인 버튼 */}
+          
+            href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google`}
+            className="px-10 py-4 rounded-xl font-bold text-lg transition hover:scale-105"
+            style={{ backgroundColor: '#8B5E3C', color: '#f5e6c8', boxShadow: '0 0 20px rgba(139, 94, 60, 0.5)' }}
+          >
+            Google로 시작하기
+          </a>
+        </div>
+
+        {/* 하단 */}
+        <footer className="text-center py-4 text-yellow-900 text-xs border-t border-yellow-900/20">
+          림버스 런 트래커 · 비공식 팬 사이트
+        </footer>
       </main>
     );
   }
