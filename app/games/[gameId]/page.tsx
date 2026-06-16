@@ -44,6 +44,8 @@ export default function GamePage() {
   const [appliedReroll, setAppliedReroll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [stoppedSlots, setStoppedSlots] = useState<number[]>([]);
+  const [pendingReroll, setPendingReroll] = useState<RerollResult | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -75,16 +77,28 @@ export default function GamePage() {
 
   async function handleCreateReroll() {
     setIsSpinning(true);
+    setStoppedSlots([]);
+    setPendingReroll(null);
+    setReroll(null);
+
     try {
       const res = (await gamesApi.createReroll(gameId)) as RerollResult;
-      // 애니메이션 시간 후 결과 표시
+      setPendingReroll(res);
+
+      // 1번 슬롯 1초 후 멈춤
+      setTimeout(() => setStoppedSlots([0]), 1000);
+      // 2번 슬롯 1.7초 후 멈춤
+      setTimeout(() => setStoppedSlots([0, 1]), 1700);
+      // 3번 슬롯 2.4초 후 멈춤 + 결과 표시
       setTimeout(() => {
+        setStoppedSlots([0, 1, 2]);
         setReroll(res);
         setAppliedReroll(false);
         setIsSpinning(false);
-      }, 1500);
+      }, 2400);
     } catch (e: any) {
       setIsSpinning(false);
+      setStoppedSlots([]);
       if (e.message === "Not enough candidates outside deck") {
         alert(
           "리롤할 인격이 부족해요. 인격 관리에서 더 많은 인격을 등록해주세요.",
@@ -266,41 +280,71 @@ export default function GamePage() {
                 🎲 리롤 뽑기
               </button>
             ) : isSpinning ? (
-              /* 슬롯머신 애니메이션 */
               <div className="flex gap-3">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="w-36 rounded-xl overflow-hidden border"
-                    style={{
-                      borderColor: "rgba(120,53,15,0.5)",
-                      backgroundColor: "rgba(44,26,14,0.8)",
-                    }}
-                  >
-                    <div className="w-full aspect-square overflow-hidden relative">
-                      {/* 슬롯 스크롤 애니메이션 */}
-                      <div
-                        className="flex flex-col"
-                        style={{
-                          animation: `slot-spin 0.1s linear infinite`,
-                        }}
-                      >
-                        {/* 덱 이미지들을 빠르게 스크롤 */}
-                        {[...deck, ...deck, ...deck].map((item, idx) => (
+                {[0, 1, 2].map((i) => {
+                  const isStopped = stoppedSlots.includes(i);
+                  const candidate = pendingReroll?.candidates[i];
+
+                  return (
+                    <div
+                      key={i}
+                      className="w-36 rounded-xl overflow-hidden border"
+                      style={{
+                        borderColor: isStopped
+                          ? "#f5e6c8"
+                          : "rgba(120,53,15,0.5)",
+                        backgroundColor: "rgba(44,26,14,0.8)",
+                        boxShadow: isStopped
+                          ? "0 0 12px rgba(245,230,200,0.3)"
+                          : "none",
+                        transition: "border-color 0.3s, box-shadow 0.3s",
+                      }}
+                    >
+                      <div className="w-full aspect-square overflow-hidden relative">
+                        {isStopped && candidate ? (
                           <img
-                            key={idx}
-                            src={item.identity.imageUrl ?? ""}
-                            alt=""
-                            className="w-full aspect-square object-cover flex-shrink-0"
+                            src={candidate.imageUrl ?? ""}
+                            alt={candidate.name}
+                            className="w-full h-full object-cover"
                           />
-                        ))}
+                        ) : (
+                          <div
+                            className="flex flex-col"
+                            style={{
+                              animation: "slot-spin 0.15s linear infinite",
+                            }}
+                          >
+                            {[...deck, ...deck, ...deck].map((item, idx) => (
+                              <img
+                                key={idx}
+                                src={item.identity.imageUrl ?? ""}
+                                alt=""
+                                className="w-full aspect-square object-cover flex-shrink-0"
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        {isStopped && candidate ? (
+                          <>
+                            <p
+                              className="font-semibold text-xs leading-tight"
+                              style={{ color: "#f5e6c8" }}
+                            >
+                              {candidate.name}
+                            </p>
+                            <p className="text-xs text-yellow-800 mt-1">
+                              Tier: {candidate.rolledTier}
+                            </p>
+                          </>
+                        ) : (
+                          <div className="h-4 bg-yellow-900/30 rounded animate-pulse" />
+                        )}
                       </div>
                     </div>
-                    <div className="p-2">
-                      <div className="h-4 bg-yellow-900/30 rounded animate-pulse" />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : reroll ? (
               <div>
