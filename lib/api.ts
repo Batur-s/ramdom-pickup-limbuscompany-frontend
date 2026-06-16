@@ -19,8 +19,13 @@ export async function apiClient<T>(
   });
 
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message ?? "API Error");
+    const text = await res.text();
+    try {
+      const error = JSON.parse(text);
+      throw new Error(error.message ?? "API Error");
+    } catch {
+      throw new Error("서버 오류가 발생했어요");
+    }
   }
 
   const text = await res.text();
